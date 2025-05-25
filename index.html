@@ -8,7 +8,7 @@
     body {
       margin: 0;
       overflow: hidden;
-      background-color: black;
+      background-color: white;
     }
     canvas {
       display: block;
@@ -35,10 +35,6 @@
     let offsetX = 0;
     let offsetY = 0;
 
-    const backgroundColor = color(26); // 10% grey
-    const lineColor = color(26);       // same as background
-    const asteriskColor = "#A97BC4";   // lavender purple
-
     function setup() {
       createCanvas(windowWidth, windowHeight);
       angleMode(RADIANS);
@@ -49,7 +45,7 @@
     }
 
     function draw() {
-      background(backgroundColor);
+      background(255); // white background
 
       cols = floor(width / gridSize);
       rows = floor(height / gridSize);
@@ -98,7 +94,7 @@
           rotate(angles[index]);
 
           if (x === asteriskX && y === asteriskY) {
-            stroke(asteriskColor);
+            stroke('#A97BC4'); // asterisk color
             scale(hoverScale);
             for (let i = 0; i < 6; i++) {
               let angle = TWO_PI / 6 * i;
@@ -109,7 +105,7 @@
               line(x1, y1, x2, y2);
             }
           } else {
-            stroke(lineColor);
+            stroke('#EDEBFB'); // 80% lighter version of #A97BC4
             line(-lineLength / 2, 0, lineLength / 2, 0);
           }
 
