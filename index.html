@@ -94,7 +94,7 @@
           rotate(angles[index]);
 
           if (x === asteriskX && y === asteriskY) {
-            stroke('#A97BC4'); // <-- Asterisk color
+            stroke('#A97BC4');
             scale(hoverScale);
             for (let i = 0; i < 6; i++) {
               let angle = TWO_PI / 6 * i;
@@ -115,19 +115,20 @@
     }
 
     function mousePressed() {
-      checkAsteriskClick();
+      handleClick();
     }
 
     function touchStarted() {
-      checkAsteriskClick();
+      handleClick();
     }
 
-    function checkAsteriskClick() {
+    function handleClick() {
       let px = offsetX + asteriskX * gridSize + gridSize / 2;
       let py = offsetY + asteriskY * gridSize + gridSize / 2;
       let d = dist(mouseX, mouseY, px, py);
       if (d < gridSize / 2) {
-        window.open("https://www.behance.net/libnypatrick", "_blank");
+        // Direct navigation (avoids popup blocker)
+        location.href = "https://www.behance.net/libnypatrick";
       }
     }
 
