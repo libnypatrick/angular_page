@@ -32,6 +32,9 @@
     let targetScale = 1;
     let scaleVel = 0;
 
+    let offsetX = 0;
+    let offsetY = 0;
+
     function setup() {
       createCanvas(windowWidth, windowHeight);
       angleMode(RADIANS);
@@ -47,11 +50,14 @@
       cols = floor(width / gridSize);
       rows = floor(height / gridSize);
 
+      offsetX = (width - cols * gridSize) / 2;
+      offsetY = (height - rows * gridSize) / 2;
+
       asteriskY = floor(rows / 2);
       asteriskX = floor(cols / 3);
 
-      let centerX = asteriskX * gridSize + gridSize / 2;
-      let centerY = asteriskY * gridSize + gridSize / 2;
+      let centerX = offsetX + asteriskX * gridSize + gridSize / 2;
+      let centerY = offsetY + asteriskY * gridSize + gridSize / 2;
 
       let d = dist(mouseX, mouseY, centerX, centerY);
       targetScale = (d < gridSize / 2) ? 1.8 : 1;
@@ -66,8 +72,8 @@
       for (let y = 0; y < rows; y++) {
         for (let x = 0; x < cols; x++) {
           let index = x + y * cols;
-          let px = x * gridSize + gridSize / 2;
-          let py = y * gridSize + gridSize / 2;
+          let px = offsetX + x * gridSize + gridSize / 2;
+          let py = offsetY + y * gridSize + gridSize / 2;
 
           if (angles.length !== cols * rows) {
             angles = new Array(cols * rows).fill(0);
@@ -109,11 +115,11 @@
     }
 
     function mousePressed() {
-      let px = asteriskX * gridSize + gridSize / 2;
-      let py = asteriskY * gridSize + gridSize / 2;
+      let px = offsetX + asteriskX * gridSize + gridSize / 2;
+      let py = offsetY + asteriskY * gridSize + gridSize / 2;
       let d = dist(mouseX, mouseY, px, py);
       if (d < gridSize / 2) {
-        window.open("https://www.behance.net/libnypatrick", "_blank"); // <- your link here
+        window.open("https://www.behance.net/libnypatrick", "_blank");
       }
     }
 
