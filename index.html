@@ -3,13 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Angular Grid Animation</title>
+  <title>Lib-O-sphere</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
+
     body {
       margin: 0;
       overflow: hidden;
       background-color: white;
     }
+
     canvas {
       display: block;
     }
@@ -19,6 +22,9 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.6.0/p5.min.js"></script>
 
   <script>
+    // ─────────────────────────────────────────────
+    // ▶ GLOBAL VARIABLES
+    // ─────────────────────────────────────────────
     let gridSize = 60;
     let cols, rows;
     let lineLength = 37.5;
@@ -35,57 +41,63 @@
     let offsetX = 0;
     let offsetY = 0;
 
+    let labelY = 0;
+    let labelTargetY = 0;
+    let labelVelY = 0;
+
+    let labelScale = 0;
+    let labelTargetScale = 0;
+    let labelScaleVel = 0;
+
+    // ─────────────────────────────────────────────
+    // ▶ SETUP
+    // ─────────────────────────────────────────────
     function setup() {
       createCanvas(windowWidth, windowHeight);
       angleMode(RADIANS);
       noFill();
       strokeWeight(4.5);
       noCursor();
-      initGrid();
+      textAlign(LEFT, CENTER);
+      textFont('Montserrat');
     }
 
+    // ─────────────────────────────────────────────
+    // ▶ DRAW LOOP
+    // ─────────────────────────────────────────────
     function draw() {
-      background(255); // white background
+      background(255);
 
-      cols = floor(width / gridSize);
-      rows = floor(height / gridSize);
-
-      offsetX = (width - cols * gridSize) / 2;
-      offsetY = (height - rows * gridSize) / 2;
-
-      asteriskY = floor(rows / 2);
-      asteriskX = floor(cols / 3);
+      updateGridDimensions();
+      updateAsteriskPosition();
 
       let centerX = offsetX + asteriskX * gridSize + gridSize / 2;
       let centerY = offsetY + asteriskY * gridSize + gridSize / 2;
 
-      let d = dist(mouseX, mouseY, centerX, centerY);
-      targetScale = (d < gridSize / 2) ? 1.8 : 1;
+      let isHovered = dist(mouseX, mouseY, centerX, centerY) < gridSize / 2;
+      updateAsteriskScale(isHovered);
+      updateLabelPhysics(isHovered);
 
-      let spring = 0.1;
-      let damping = 0.6;
-      let force = (targetScale - hoverScale) * spring;
-      scaleVel += force;
-      scaleVel *= damping;
-      hoverScale += scaleVel;
+      drawGrid(centerX, centerY);
+      drawBehanceLabel(centerX, centerY);
+    }
 
+    // ─────────────────────────────────────────────
+    // ▶ GRID + ASTERISK ANIMATION
+    // ─────────────────────────────────────────────
+    function drawGrid(centerX, centerY) {
       for (let y = 0; y < rows; y++) {
         for (let x = 0; x < cols; x++) {
           let index = x + y * cols;
           let px = offsetX + x * gridSize + gridSize / 2;
           let py = offsetY + y * gridSize + gridSize / 2;
 
-          if (angles.length !== cols * rows) {
-            angles = new Array(cols * rows).fill(0);
-            angularVels = new Array(cols * rows).fill(0);
-          }
+          initGridAngles();
 
           let targetAngle = atan2(mouseY - py, mouseX - px);
-          let diff = targetAngle - angles[index];
-          diff = (diff + PI) % (2 * PI) - PI;
+          let diff = ((targetAngle - angles[index] + PI) % (2 * PI)) - PI;
 
-          let angularAccel = diff * 0.1;
-          angularVels[index] += angularAccel;
+          angularVels[index] += diff * 0.1;
           angularVels[index] *= 0.8;
           angles[index] += angularVels[index];
 
@@ -94,18 +106,9 @@
           rotate(angles[index]);
 
           if (x === asteriskX && y === asteriskY) {
-            stroke('#A97BC4'); // asterisk color
-            scale(hoverScale);
-            for (let i = 0; i < 6; i++) {
-              let angle = TWO_PI / 6 * i;
-              let x1 = cos(angle) * lineLength / 2;
-              let y1 = sin(angle) * lineLength / 2;
-              let x2 = -x1;
-              let y2 = -y1;
-              line(x1, y1, x2, y2);
-            }
+            drawAsterisk();
           } else {
-            stroke('#EDEBFB'); // 80% lighter version of #A97BC4
+            stroke('#EDEBFB'); // Light line color
             line(-lineLength / 2, 0, lineLength / 2, 0);
           }
 
@@ -114,6 +117,74 @@
       }
     }
 
+    function drawAsterisk() {
+      stroke('#A97BC4');
+      scale(hoverScale);
+      for (let i = 0; i < 6; i++) {
+        let angle = TWO_PI / 6 * i;
+        let x1 = cos(angle) * lineLength / 2;
+        let y1 = sin(angle) * lineLength / 2;
+        let x2 = -x1;
+        let y2 = -y1;
+        line(x1, y1, x2, y2);
+      }
+    }
+
+    function updateAsteriskScale(isHovered) {
+      targetScale = isHovered ? 1.8 : 1;
+      let spring = 0.1;
+      let damping = 0.6;
+      let force = (targetScale - hoverScale) * spring;
+      scaleVel += force;
+      scaleVel *= damping;
+      hoverScale += scaleVel;
+    }
+
+    function updateLabelPhysics(isHovered) {
+      labelTargetY = isHovered ? -65 : 0;
+      labelVelY += (labelTargetY - labelY) * 0.15;
+      labelVelY *= 0.7;
+      labelY += labelVelY;
+
+      labelTargetScale = isHovered ? 1.5 : 0;
+      labelScaleVel += (labelTargetScale - labelScale) * 0.2;
+      labelScaleVel *= 0.7;
+      labelScale += labelScaleVel;
+    }
+
+    // ─────────────────────────────────────────────
+    // ▶ TEXT LABEL RENDERING
+    // ─────────────────────────────────────────────
+    function drawBehanceLabel(cx, cy) {
+      if (labelScale > 0.01) {
+        push();
+        translate(cx, cy + labelY);
+        scale(labelScale);
+        noStroke();
+        textSize(20); 
+        fill('#A97BC4'); //       
+
+        let myText = "Libny's ";
+        let behanceText = "Bēhance";
+
+        textStyle(BOLD);
+        let myWidth = textWidth(myText);
+        let totalWidth = myWidth + textWidth(behanceText);
+        let startX = -totalWidth / 2;
+
+        fill('#A97BC4');
+        text(myText, startX, 0);
+
+        fill('#3A1850'); // much darker purple for "Behance"
+        text(behanceText, startX + myWidth, 0);
+
+        pop();
+      }
+    }
+
+    // ─────────────────────────────────────────────
+    // ▶ INTERACTIONS
+    // ─────────────────────────────────────────────
     function mousePressed() {
       handleClick();
     }
@@ -127,10 +198,13 @@
       let py = offsetY + asteriskY * gridSize + gridSize / 2;
       let d = dist(mouseX, mouseY, px, py);
       if (d < gridSize / 2) {
-        location.href = "https://www.behance.net/libnypatrick";
+        window.open("https://www.behance.net/libnypatrick", "_blank");
       }
     }
 
+    // ─────────────────────────────────────────────
+    // ▶ UTILITY FUNCTIONS
+    // ─────────────────────────────────────────────
     function windowResized() {
       resizeCanvas(windowWidth, windowHeight);
       initGrid();
@@ -141,6 +215,25 @@
       rows = floor(height / gridSize);
       angles = new Array(cols * rows).fill(0);
       angularVels = new Array(cols * rows).fill(0);
+    }
+
+    function initGridAngles() {
+      if (angles.length !== cols * rows) {
+        angles = new Array(cols * rows).fill(0);
+        angularVels = new Array(cols * rows).fill(0);
+      }
+    }
+
+    function updateGridDimensions() {
+      cols = floor(width / gridSize);
+      rows = floor(height / gridSize);
+      offsetX = (width - cols * gridSize) / 2;
+      offsetY = (height - rows * gridSize) / 2;
+    }
+
+    function updateAsteriskPosition() {
+      asteriskY = floor(rows / 2);
+      asteriskX = floor(cols / 3);
     }
   </script>
 </body>
