@@ -115,6 +115,14 @@
     }
 
     function mousePressed() {
+      checkAsteriskClick();
+    }
+
+    function touchStarted() {
+      checkAsteriskClick();
+    }
+
+    function checkAsteriskClick() {
       let px = offsetX + asteriskX * gridSize + gridSize / 2;
       let py = offsetY + asteriskY * gridSize + gridSize / 2;
       let d = dist(mouseX, mouseY, px, py);
